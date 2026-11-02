@@ -35,11 +35,12 @@ jobs:
         run: |
           brew install make xz ldid
           sed -i '' 's/^depends:.*/Depends: mobilesubstrate, com.muirey03.libmryipc, com.opa334.crane/' control
+          sed -i '' 's/export ARCHS = armv7 arm64 arm64e/export ARCHS = arm64/' MRYIPC/Makefile
           cd MRYIPC
           chmod +x install.sh
           THEOS=../theos ./install.sh
           cd ..
-          THEOS=theos gmake clean package FINALPACKAGE=1 TARGET=iphone:clang:latest:14.0
+          THEOS=theos gmake clean package FINALPACKAGE=1 TARGET=iphone:clang:latest:14.0 ARCHS=arm64
 
       - name: Upload deb
         uses: actions/upload-artifact@v4
