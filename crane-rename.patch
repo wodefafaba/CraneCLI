@@ -1,0 +1,66 @@
+diff --git a/main.m b/main.m
+--- a/main.m
++++ b/main.m
+@@ -110,6 +110,7 @@ static void cliPrintHelp() {
+ 	printf("  -c <name> <appID> OPT:<containerID> Create a new container\n");
+ 	printf("  -l List all applications with non-default containers\n");
+ 	printf("  -d <appID> <containerID> Delete a specified container for an application\n");
++	printf("  -r <appID> <containerID> <newName> Rename a specified container\n");
+ 	printf("  -h Print this help message\n");
+ 	printf("  -t Header dump on all containers for tinder (Built For Mike)\n");
+ 	printf("  -o <appID> <containerID> Open app with active container\n");
+@@ -133,7 +134,7 @@ int main(int argc, char *argv[]) {
+ 		if (argc == 1) {
+ 			cliPrintHelp();
+ 		}
+-		while ((opt = getopt(argc, argv, "c:ld:tho:")) != -1) {
++		while ((opt = getopt(argc, argv, "c:ld:thr:o:")) != -1) {
+ 			switch (opt) {
+ 				case 'c':
+ 					if (argc > 3) {
+@@ -166,6 +167,47 @@ int main(int argc, char *argv[]) {
+ 					}
+ 					break;
+ 
++				case 'r':
++					if (argc > 4) {
++						appID = argv[2];
++						containerID = argv[3];
++						name = argv[4];
++						NSString *appIDString = [NSString stringWithUTF8String:appID];
++						NSString *containerIDString = [NSString stringWithUTF8String:containerID];
++						NSString *nameString = [NSString stringWithUTF8String:name];
++						@try {
++							NSMutableDictionary *appSettings = [[craneManager applicationSettingsForApplicationWithIdentifier:appIDString] mutableCopy];
++							NSMutableArray *containers = [appSettings[@"Containers"] mutableCopy];
++							BOOL renamed = NO;
++
++							for (NSUInteger index = 0; index < [containers count]; index++) {
++								NSDictionary *container = containers[index];
++								if ([container[@"identifier"] isEqualToString:containerIDString]) {
++									NSMutableDictionary *updatedContainer = [container mutableCopy];
++									updatedContainer[@"name"] = nameString;
++									containers[index] = updatedContainer;
++									renamed = YES;
++									break;
++								}
++							}
++
++							if (renamed) {
++								appSettings[@"Containers"] = containers;
++								[craneManager setApplicationSettings:appSettings forApplicationWithIdentifier:appIDString];
++								printf("crane-cli: Renamed container \"%s\" for app \"%s\" to \"%s\"\n", containerID, appID, name);
++							} else {
++								printf("crane-cli: Container \"%s\" not found for app \"%s\"\n", containerID, appID);
++							}
++						} @catch (NSException *exception) {
++							printf("%s\n", [[exception reason] UTF8String]);
++						}
++					} else {
++						printf("Usage: crane-cli -r <appID> <containerID> <newName>\n");
++					}
++					break;
++
+ 				case 'l':
+ 					apps = [craneManager identfiersOfApplicationsThatHaveNonDefaultContainers];
+ 					for (NSString *app in apps) {
