@@ -18,7 +18,7 @@ diff --git a/main.m b/main.m
  			switch (opt) {
  				case 'c':
  					if (argc > 3) {
-@@ -166,6 +167,47 @@ int main(int argc, char *argv[]) {
+@@ -166,6 +167,45 @@ int main(int argc, char *argv[]) {
  					}
  					break;
  
