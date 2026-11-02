@@ -11,6 +11,11 @@ jobs:
       - name: Checkout CraneCLI
         uses: actions/checkout@v4
 
+      - name: Add container rename command
+        run: |
+          git apply --check crane-rename.patch
+          git apply crane-rename.patch
+
       - name: Checkout Theos
         uses: actions/checkout@v4
         with:
