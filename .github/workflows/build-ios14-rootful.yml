@@ -1,0 +1,49 @@
+name: Build CraneCLI iOS 14 Rootful
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout CraneCLI
+        uses: actions/checkout@v4
+
+      - name: Checkout Theos
+        uses: actions/checkout@v4
+        with:
+          repository: theos/theos
+          submodules: recursive
+          path: theos
+
+      - name: Checkout iOS SDK
+        uses: actions/checkout@v4
+        with:
+          repository: theos/sdks
+          sparse-checkout: iPhoneOS16.5.sdk
+          path: theos/sdks
+
+      - name: Checkout MRYIPC
+        uses: actions/checkout@v4
+        with:
+          repository: iosrouter/MRYIPC
+          path: MRYIPC
+
+      - name: Build rootful package for iOS 14
+        run: |
+          brew install make xz ldid
+          sed -i '' 's/^depends:.*/Depends: mobilesubstrate, com.muirey03.libmryipc, com.opa334.crane/' control
+          cd MRYIPC
+          chmod +x install.sh
+          THEOS=../theos ./install.sh
+          cd ..
+          THEOS=theos gmake clean package FINALPACKAGE=1 TARGET=iphone:clang:latest:14.0
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: CraneCLI-iOS14-rootful
+          path: packages/*iphoneos-arm.deb
+          if-no-files-found: error
