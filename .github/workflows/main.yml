@@ -4,15 +4,13 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@main
-
       - name: Add container rename command
         run: |
           git apply --check crane-rename.patch
           git apply crane-rename.patch
-
       - name: Checkout theos/theos
         uses: actions/checkout@main
         with:
@@ -20,20 +18,17 @@ jobs:
           ref: master
           submodules: recursive
           path: theos
-
       - name: Checkout theos/sdks
         uses: actions/checkout@main
         with:
           repository: theos/sdks
           sparse-checkout: iPhoneOS16.5.sdk
           path: theos/sdks
-
       - name: Checkout MRYIPC/master
         uses: actions/checkout@main
         with:
           repository: iosrouter/MRYIPC
           path: MRYIPC
-
       - name: Setup libs & build package
         run: |
           brew install make xz ldid
@@ -42,7 +37,6 @@ jobs:
           THEOS=../theos ./install.sh
           cd ../
           THEOS=theos gmake clean package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
-
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
         with:
